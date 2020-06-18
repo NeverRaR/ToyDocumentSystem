@@ -201,9 +201,12 @@ namespace DocumentSystem
             curName.Clear();
             TextBox tb = new TextBox();
             tb.ReadOnly = true;
-            tb.Size = new Size(582, 1000);
-            tb.Location = new Point(10, 80);
-            tb.Text = (docSys.ReadFile((int)docSys.FCBLevel.Peek()));
+            String s = (docSys.ReadFile((int)docSys.FCBLevel.Peek()));
+            tb.Multiline = true;
+            tb.Text = s;
+            tb.Size = new Size(582, (tb.Text.Length / 96+1) * 15);
+            tb.Location = new Point(10, 80);                           
+            if (s == "") tb.Text = " ";
             curName.Add(tb);
             this.Controls.Add(tb);
         }
@@ -219,12 +222,14 @@ namespace DocumentSystem
             }
             curButo.Clear();
             curName.Clear();
+            docSys.OpenFile(focusName);
             TextBox tb = new TextBox();            
             tb.ReadOnly = true;
-            tb.Size = new Size(582, 1000);
+            tb.Multiline = true;
+            tb.Text = (docSys.ReadFile((int)docSys.FCBLevel.Peek()));
+            tb.Size = new Size(582, (tb.Text.Length/96+1)*15);
             tb.Location = new Point(10, 80);
-            docSys.OpenFile(focusName);
-            tb.Text=(docSys.ReadFile((int)docSys.FCBLevel.Peek()));
+            docSys.OpenFile(focusName);            
             curButo.Add(tb);
             curName.Add(tb);
             this.Controls.Add(tb);
@@ -279,6 +284,11 @@ namespace DocumentSystem
             }
             dataFile.Close();
             MessageBox.Show("Saved successfully!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

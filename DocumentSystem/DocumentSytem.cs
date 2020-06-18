@@ -15,7 +15,7 @@ namespace DocumentSystem
         public const int FCBBlockNum = 64;
         public const int rootBeginAddr = 37;
         public BitArray disk = new BitArray(blockNum * blockSize + 50, false);
-        public string dataFileName = "dataFile";
+        public String dataFileName = "dataFile";
         public Stack FCBLevel = new Stack();
         public ArrayList curPath = new ArrayList();
         FileStream dataFile;
@@ -45,7 +45,7 @@ namespace DocumentSystem
         {
             int i;
             System.Text.ASCIIEncoding asciiEncoding = new System.Text.ASCIIEncoding();
-            string s = new string(ch, 1);
+            String s = new String(ch, 1);
             int data = asciiEncoding.GetBytes(s)[0];
             for (i = 0; i < 8; ++i)
             {
@@ -67,7 +67,7 @@ namespace DocumentSystem
             byte[] byteArray = new byte[] { (byte)data };
             return asciiEncoding.GetString(byteArray)[0];
         }
-        public void SetString(int begin, string s)
+        public void SetString(int begin, String s)
         {
             int i;
             for (i = 0; i < s.Length; ++i)
@@ -75,16 +75,24 @@ namespace DocumentSystem
                 SetChar(s[i], 8 * i + begin);
             }
         }
-        public string GetString(int begin, int len)
+        public String GetString(int begin, int len)
         {
-            int i;
-            string s = "";
+            int i;            
+            List<char> lc = new List<char>();
             for (i = 0; i < len; ++i)
             {
                 char ch = GetChar(begin + i * 8);
                 if (ch == '\0') break;
-                s += ch;
+                lc.Add(ch);
             }
+            char[] t = new char[lc.Count];
+            i = 0;
+            foreach(char ch in lc)
+            {
+                t[i] = ch;
+                i++;
+            }
+            String s = new String(t);
             return s;
         }
         public void SetBitArray(int begin, BitArray ba)
@@ -183,16 +191,19 @@ namespace DocumentSystem
                         int nextBlock = GetNextFreeBlock();
                         if (nextBlock == 0) return false;//磁盘已满，写入失败
                         SetInt(nextBlock, indexBlock.num * blockSize + 16 * 31, 16);
+                        int j;
+                        for (j = 0; j < blockSize; ++j)
+                        {
+                            blockArray[j] = disk[j + indexBlock.num * blockSize];
+                        }
                         int temp = nextBlock;
                         nextBlock = GetNextFreeBlock();
                         SetInt(nextBlock, temp * blockSize, 16);
-                        for (i = 0; i < blockSize; ++i)
-                        {
-                            blockArray[i] = false;
-                        }
+                   
                         indexBlock.ChangeBlock(blockArray);
                         indexBlock.num = temp;
                         endAddr = nextBlock * blockSize;
+                        indexBlock.endIndex = 0;
                     }
                     else
                     {
@@ -232,8 +243,26 @@ namespace DocumentSystem
             SetInt(NewHead, 16, 21);
             return NextFCB;
         }
-        public bool WriteFile(int rootBeginAddr, string s)
+        public int CountFreeBlock()
         {
+            int head = GetInt(0, 16);
+            if (head == 0) return 0;
+            int next = GetInt(blockSize * head, 16);
+            int count = 1;
+            while(next!=0)
+            {
+                count++;
+                next = GetInt(blockSize * next, 16);
+            }
+            return count;
+        }
+        public bool WriteFile(int rootBeginAddr, String s)
+        {
+            int neededBlock = 0;
+            neededBlock +=(int) Math.Ceiling(((decimal)s.Length * 8) / ((decimal)512));
+            neededBlock += (int)Math.Ceiling(((decimal)neededBlock) / ((decimal)31));
+            int freeBlockNum = CountFreeBlock();
+            if (freeBlockNum < neededBlock) return false;
             System.Text.ASCIIEncoding asciiEncoding = new System.Text.ASCIIEncoding();
             byte[] data = asciiEncoding.GetBytes(s);
             BitArray dataArray = new BitArray(data.Length * 8);
@@ -249,8 +278,10 @@ namespace DocumentSystem
             }
             return WriteFile(rootBeginAddr, dataArray);
         }
-        public bool CreateFile(int rootBeginAddr, string fileName, bool isFolder)
+        public bool CreateFile(int rootBeginAddr, String fileName, bool isFolder)
         {
+            if (GetInt(16, 21) == 0) return false;
+            if (CountFreeBlock() < 2) return false;
             int nextFCB = GetNextFreeFCB();
             if (nextFCB == 0) return false;//无空闲FCB，创建失败
             int nextBlock = GetNextFreeBlock();
@@ -275,7 +306,7 @@ namespace DocumentSystem
             }
             return WriteFile(rootBeginAddr, childBeginAddr);
         }
-        public void DeleteFile(string s)
+        public void DeleteFile(String s)
         {
             if (!IsChildExisted(s)) return;
             int childAddr = FindChild(s);
@@ -314,7 +345,7 @@ namespace DocumentSystem
             int childAddr = indexBlock.indexes[indexBlock.endIndex - 1] * blockSize + (rootFCB.endOffset - 32);
             return childAddr;
         }
-        public int FindChild(string s)
+        public int FindChild(String s)
         {
             int rootBeginAddr = (int)FCBLevel.Peek();
 
@@ -476,7 +507,7 @@ namespace DocumentSystem
             SetInt(GetInt(16, 21), rootBeginAddr, 21);
             SetInt(rootBeginAddr, 16, 21);
         }
-        public bool CreatFileOnCur(string s, bool isFolder)
+        public bool CreatFileOnCur(String s, bool isFolder)
         {
             if (IsChildExisted(s)) return false;
             return CreateFile((int)FCBLevel.Peek(), s, isFolder);
@@ -562,10 +593,9 @@ namespace DocumentSystem
             }
             return allChild;
         }
-        public string ReadFile(int rootBeginAddr)
+        public String ReadFile(int rootBeginAddr)
         {
-            string content = "";
-
+            List<String> ls = new List<String>();
             BitArray rootFCBArray = GetBitArray(rootBeginAddr, 128);
             FCB rootFCB = new FCB(rootFCBArray, rootBeginAddr);
             BitArray blockArray = GetBitArray(rootFCB.indexBlock * blockSize, blockSize);
@@ -575,11 +605,8 @@ namespace DocumentSystem
             {
                 for (i = 0; i < 31; ++i)
                 {
-                    for (j = 0; j < 512; ++j)
-                    {
-                        int curBlock = indexBlock.indexes[i];
-                        content += GetString(curBlock * 512, 64);
-                    }
+                  int curBlock = indexBlock.indexes[i];
+                  ls.Add(GetString(curBlock * 512, 64));
                 }
                 int nextBlock = indexBlock.indexes[31];
                 for (i = 0; i < blockSize; ++i)
@@ -587,17 +614,36 @@ namespace DocumentSystem
                     blockArray[i] = disk[i + nextBlock * blockSize];
                 }
                 indexBlock.ChangeBlock(blockArray);
+
             }
             for (i = 0; i < indexBlock.endIndex - 1; ++i)
             {
                 int curBlock = indexBlock.indexes[i];
-                content += GetString(curBlock * 512, 64);
+                ls.Add(GetString(curBlock * 512, 64));
             }
 
-            content += GetString(indexBlock.indexes[i] * blockSize, rootFCB.endOffset);
-            return content;
+            String s = GetString(indexBlock.indexes[i] * blockSize, rootFCB.endOffset);
+            int totLen = ls.Count * 64+s.Length;
+            char[] t = new char[totLen];
+            j = 0;
+            i = 0;
+            foreach(String str in ls)
+            {
+                for(j=0;j<64;++j)
+                {
+                    t[i] = str[j];
+                    i++;
+                }
+            }
+            for(j=0;j<s.Length;++j)
+            {
+                t[i] = s[j];
+                i++;
+            }
+            return new String(t);
+           
         }
-        public bool OpenFile(string s)
+        public bool OpenFile(String s)
         {
             int rootBeginAddr = (int)FCBLevel.Peek();
             BitArray rootFCBArray = GetBitArray(rootBeginAddr, 128);
@@ -664,7 +710,7 @@ namespace DocumentSystem
         {
             return disk[(int)FCBLevel.Peek() + 96];
         }
-        public bool IsChildExisted(string s)
+        public bool IsChildExisted(String s)
         {
             int rootBeginAddr = (int)FCBLevel.Peek();
 
@@ -796,6 +842,7 @@ namespace DocumentSystem
             int i;
             for (i = 0; i < 32; ++i)
             {
+                indexes[i] = 0;
                 int j;
                 for (j = 0; j < 16; ++j)
                 {
