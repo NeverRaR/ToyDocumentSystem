@@ -118,5 +118,8 @@
   <ItemGroup>
     <None Include="Properties\save.jpg" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\clear.jpg" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

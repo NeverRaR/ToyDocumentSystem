@@ -119,7 +119,7 @@ namespace DocumentSystem
             curPath.Add("root");
             try
             {
-                dataFile = new FileStream(dataFileName, FileMode.Open, FileAccess.Read);
+                dataFile = new FileStream(dataFileName, FileMode.OpenOrCreate, FileAccess.Read);
                 BinaryReader dataFileReader = new BinaryReader(dataFile);
                 int i, j;
                 for (i = 0; i < blockSize * blockNum/8; ++i)
@@ -144,6 +144,8 @@ namespace DocumentSystem
         }
         public void FirstInit()
         {
+            
+            disk = new BitArray(blockNum * blockSize + 50, false);
             int blockTag = 2 + FCBBlockNum;
             int i;
             if(dataFile!=null) dataFile.Close();

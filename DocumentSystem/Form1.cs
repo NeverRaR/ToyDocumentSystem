@@ -36,23 +36,23 @@ namespace DocumentSystem
         {
             if (isInFile)
             {
-                MessageBox.Show("You are in a file!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("You are in a file!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             String s = Interaction.InputBox("Please enter the name of the folder you want to create (no more than 12 characters and in English) ", "CreateFolder");
             if (docSys.IsChildExisted(s))
             {
-                MessageBox.Show("duplicated file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("duplicated file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             if (s.Length == 0)
             {
-                MessageBox.Show("empty file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("empty file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             if (s.Length > 12)
             {
-                MessageBox.Show("too long file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("too long file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             docSys.CreatFileOnCur(s, true);
@@ -150,23 +150,23 @@ namespace DocumentSystem
         {
             if(isInFile)
             {
-                MessageBox.Show("You are in a file!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("You are in a file!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             String s = Interaction.InputBox("Please enter the name of the file you want to create (no more than 12 characters and in English) ", "CreateFile");
             if (docSys.IsChildExisted(s))
             {
-                MessageBox.Show("duplicated file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("duplicated file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             if (s.Length == 0)
             {
-                MessageBox.Show("empty file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("empty file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             if (s.Length > 12)
             {
-                MessageBox.Show("too long file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("too long file name!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             docSys.CreatFileOnCur(s, false);
@@ -250,13 +250,13 @@ namespace DocumentSystem
         {
             if(docSys.GetCurType())
             {
-                MessageBox.Show("please open a file!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("please open a file!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             String s = Interaction.InputBox("Please enter the string you want to write:", "WriteFile");
             if(!docSys.WriteFile((int)docSys.FCBLevel.Peek(),s))
             {
-                MessageBox.Show("Space is full, some information may be lost!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+                MessageBox.Show("Space is full, some information may be lost!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
             RefreshFile();
@@ -292,12 +292,47 @@ namespace DocumentSystem
                 dataBinaryWriter.Write(t);
             }
             dataFile.Close();
-            MessageBox.Show("Saved successfully!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);
+            MessageBox.Show("Saved successfully!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
 
+        }
+
+        private void button7_Click(object sender, EventArgs e)
+        {
+           DialogResult dr= MessageBox.Show("Are you sure you want to format the disk?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+           if(dr==DialogResult.Yes)
+            {
+                docSys.FirstInit();
+                focusName = "";
+                FileStream dataFile = new FileStream(docSys.dataFileName, FileMode.OpenOrCreate, FileAccess.Write);
+
+                BinaryWriter dataBinaryWriter = new BinaryWriter(dataFile);
+                int i;
+                for (i = 0; i < 512 * 64 * 1024 / 8; ++i)
+                {
+                    byte t = 0;
+                    if (docSys.disk[i * 8 + 7]) t ^= 1;
+                    if (docSys.disk[i * 8 + 6]) t ^= 1 << 1;
+                    if (docSys.disk[i * 8 + 5]) t ^= 1 << 2;
+                    if (docSys.disk[i * 8 + 4]) t ^= 1 << 3;
+                    if (docSys.disk[i * 8 + 3]) t ^= 1 << 4;
+                    if (docSys.disk[i * 8 + 2]) t ^= 1 << 5;
+                    if (docSys.disk[i * 8 + 1]) t ^= 1 << 6;
+                    if (docSys.disk[i * 8]) t ^= 1 << 7;
+                    dataBinaryWriter.Write(t);
+                }
+                dataFile.Close();
+                docSys.FCBLevel.Clear();
+                docSys.curPath.Clear();
+                docSys.FCBLevel.Push(DocumentSystem.rootBeginAddr);
+                docSys.curPath.Add("root");
+                RefreshFolder();
+                MessageBox.Show("Formatted the disk successfully!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+              
+            }
         }
     }
 }
