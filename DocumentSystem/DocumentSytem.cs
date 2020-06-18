@@ -121,10 +121,15 @@ namespace DocumentSystem
             {
                 dataFile = new FileStream(dataFileName, FileMode.Open, FileAccess.Read);
                 BinaryReader dataFileReader = new BinaryReader(dataFile);
-                int i;
-                for (i = 0; i < blockSize * blockNum; ++i)
+                int i, j;
+                for (i = 0; i < blockSize * blockNum/8; ++i)
                 {
-                    disk[i] = dataFileReader.ReadBoolean();
+                    byte t = dataFileReader.ReadByte();
+                    for(j=0;j<8;++j)
+                    {
+                        byte val =(byte) (1 << j);
+                        if ((t & val) == val) disk[i * 8 +7- j] = true;
+                    }
                 }
                 dataFile.Close();
 

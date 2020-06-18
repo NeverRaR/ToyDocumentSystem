@@ -204,7 +204,7 @@ namespace DocumentSystem
             String s = (docSys.ReadFile((int)docSys.FCBLevel.Peek()));
             tb.Multiline = true;
             tb.Text = s;
-            tb.Size = new Size(582, (tb.Text.Length / 96+1) * 15);
+            tb.Size = new Size(582, 20+(tb.Text.Length / 96+1) * 15);
             tb.Location = new Point(10, 80);                           
             if (s == "") tb.Text = " ";
             curName.Add(tb);
@@ -227,7 +227,7 @@ namespace DocumentSystem
             tb.ReadOnly = true;
             tb.Multiline = true;
             tb.Text = (docSys.ReadFile((int)docSys.FCBLevel.Peek()));
-            tb.Size = new Size(582, (tb.Text.Length/96+1)*15);
+            tb.Size = new Size(582,20+ (tb.Text.Length/96+1)*15);
             tb.Location = new Point(10, 80);
             docSys.OpenFile(focusName);            
             curButo.Add(tb);
@@ -278,9 +278,18 @@ namespace DocumentSystem
            
             BinaryWriter dataBinaryWriter = new BinaryWriter(dataFile);
             int i;
-            for (i = 0; i < 512*64*1024;  ++i)
+            for (i = 0; i < 512*64*1024/8;  ++i)
             {
-                dataBinaryWriter.Write(docSys.disk[i]);
+                byte t = 0;
+                if (docSys.disk[i * 8+7]) t ^= 1;
+                if (docSys.disk[i * 8+6]) t ^= 1<<1;
+                if (docSys.disk[i * 8+5]) t ^= 1<<2;
+                if (docSys.disk[i * 8+4]) t ^= 1<<3;
+                if (docSys.disk[i * 8+3]) t ^= 1<<4;
+                if (docSys.disk[i * 8+2]) t ^= 1<<5;
+                if (docSys.disk[i * 8+1]) t ^= 1<<6;
+                if (docSys.disk[i * 8]) t ^= 1<<7;
+                dataBinaryWriter.Write(t);
             }
             dataFile.Close();
             MessageBox.Show("Saved successfully!", "", MessageBoxButtons.OK, MessageBoxIcon.Question);

@@ -69,7 +69,7 @@
             this.button6.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
             this.button6.FlatAppearance.MouseOverBackColor = System.Drawing.Color.White;
             this.button6.ForeColor = System.Drawing.Color.Cornsilk;
-            this.button6.Location = new System.Drawing.Point(500, 6);
+            this.button6.Location = new System.Drawing.Point(388, 6);
             this.button6.Name = "button6";
             this.button6.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.button6.Size = new System.Drawing.Size(72, 61);
@@ -86,7 +86,7 @@
             this.button5.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
             this.button5.FlatAppearance.MouseOverBackColor = System.Drawing.Color.White;
             this.button5.ForeColor = System.Drawing.Color.Cornsilk;
-            this.button5.Location = new System.Drawing.Point(293, 6);
+            this.button5.Location = new System.Drawing.Point(232, 6);
             this.button5.Name = "button5";
             this.button5.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.button5.Size = new System.Drawing.Size(72, 61);
@@ -103,7 +103,7 @@
             this.button4.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
             this.button4.FlatAppearance.MouseOverBackColor = System.Drawing.Color.White;
             this.button4.ForeColor = System.Drawing.Color.Cornsilk;
-            this.button4.Location = new System.Drawing.Point(399, 6);
+            this.button4.Location = new System.Drawing.Point(310, 6);
             this.button4.Name = "button4";
             this.button4.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.button4.Size = new System.Drawing.Size(72, 61);
@@ -120,7 +120,7 @@
             this.button3.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
             this.button3.FlatAppearance.MouseOverBackColor = System.Drawing.Color.White;
             this.button3.ForeColor = System.Drawing.Color.Cornsilk;
-            this.button3.Location = new System.Drawing.Point(187, 6);
+            this.button3.Location = new System.Drawing.Point(154, 6);
             this.button3.Name = "button3";
             this.button3.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.button3.Size = new System.Drawing.Size(72, 61);
@@ -136,7 +136,7 @@
             this.button2.FlatAppearance.BorderSize = 0;
             this.button2.FlatAppearance.MouseDownBackColor = System.Drawing.Color.White;
             this.button2.FlatAppearance.MouseOverBackColor = System.Drawing.Color.White;
-            this.button2.Location = new System.Drawing.Point(107, 6);
+            this.button2.Location = new System.Drawing.Point(89, 6);
             this.button2.Name = "button2";
             this.button2.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
             this.button2.Size = new System.Drawing.Size(59, 61);
