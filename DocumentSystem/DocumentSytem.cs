@@ -154,6 +154,8 @@ namespace DocumentSystem
             int FCBTag = 512;
             SetInt(FCBTag, 16, 21);
             //初始化第一个空闲FCB
+            SetInt(blockNum - blockTag, 256, 16);//初始化空闲块数量
+            int temp = GetInt(256, 16);
             SetString(37, "root");              //初始化
             disk[133] = true;                  // 根目录
             SetInt(blockTag - 1, 134, 16);    //   FCB          
@@ -210,7 +212,7 @@ namespace DocumentSystem
                         indexBlock.ChangeBlock(blockArray);
                         indexBlock.num = temp;
                         endAddr = nextBlock * blockSize;
-                        indexBlock.endIndex = 0;
+                        indexBlock.endIndex = 1;
                     }
                     else
                     {
@@ -233,12 +235,14 @@ namespace DocumentSystem
 
         public int GetNextFreeBlock()
         {
-            int NextBlock = GetInt(0, 16);
-            if (NextBlock == 0) return 0;
-            int NewHead = GetInt(NextBlock * blockSize, 16);
-            SetInt(0, NextBlock * blockSize, 16);
-            SetInt(NewHead, 0, 16);
-            return NextBlock;
+            int curFreeNum = GetInt(256, 16);
+            int nextBlock = GetInt(0, 16);
+            if (nextBlock == 0) return 0;
+            int newHead = GetInt(nextBlock * blockSize, 16);
+            SetInt(0, nextBlock * blockSize, 16);
+            SetInt(newHead, 0, 16);
+            SetInt(curFreeNum - 1, 256, 16);
+            return nextBlock;
         }
 
         public int GetNextFreeFCB()
@@ -252,16 +256,8 @@ namespace DocumentSystem
         }
         public int CountFreeBlock()
         {
-            int head = GetInt(0, 16);
-            if (head == 0) return 0;
-            int next = GetInt(blockSize * head, 16);
-            int count = 1;
-            while(next!=0)
-            {
-                count++;
-                next = GetInt(blockSize * next, 16);
-            }
-            return count;
+            int curFree = GetInt(256, 16);
+            return curFree;
         }
         public bool WriteFile(int rootBeginAddr, String s)
         {
@@ -269,7 +265,7 @@ namespace DocumentSystem
             neededBlock +=(int) Math.Ceiling(((decimal)s.Length * 8) / ((decimal)512));
             neededBlock += (int)Math.Ceiling(((decimal)neededBlock) / ((decimal)31));
             int freeBlockNum = CountFreeBlock();
-            if (freeBlockNum < neededBlock) return false;
+            if (freeBlockNum < neededBlock) return false;          
             System.Text.ASCIIEncoding asciiEncoding = new System.Text.ASCIIEncoding();
             byte[] data = asciiEncoding.GetBytes(s);
             BitArray dataArray = new BitArray(data.Length * 8);
@@ -435,6 +431,7 @@ namespace DocumentSystem
                     }
                     SetInt(GetInt(0, 16), indexBlock.num * blockSize, 16);
                     SetInt(indexBlock.num, 0, 16);
+                    SetInt(GetInt(256, 16) + 1, 256, 16);
                     for (i = 0; i < blockSize; ++i)
                     {
                         blockArray[i] = disk[i + nextBlock * blockSize];
@@ -460,6 +457,7 @@ namespace DocumentSystem
                 }
                 SetInt(GetInt(0, 16), indexBlock.num * blockSize, 16);
                 SetInt(indexBlock.num, 0, 16);
+                SetInt(GetInt(256, 16) + 1, 256, 16);
             }
             else
             {
@@ -480,6 +478,7 @@ namespace DocumentSystem
                         }
                         SetInt(GetInt(0, 16), curBlock * blockSize, 16);
                         SetInt(curBlock, 0, 16);
+                        SetInt(GetInt(256, 16) + 1, 256, 16);
 
                     }
                     int nextBlock = indexBlock.indexes[31];
@@ -489,6 +488,7 @@ namespace DocumentSystem
                     }
                     SetInt(GetInt(0, 16), indexBlock.num * blockSize, 16);
                     SetInt(indexBlock.num, 0, 16);
+                    SetInt(GetInt(256, 16) + 1, 256, 16);
                     for (i = 0; i < blockSize; ++i)
                     {
                         blockArray[i] = disk[i + nextBlock * blockSize];
@@ -505,7 +505,15 @@ namespace DocumentSystem
                     }
                     SetInt(GetInt(0, 16), curBlock * blockSize, 16);
                     SetInt(curBlock, 0, 16);
+                    SetInt(GetInt(256, 16) + 1, 256, 16);
                 }
+                for (j = 0; j < 512; ++j)
+                {
+                    disk[indexBlock.num * blockSize + j] = false;//将数据擦除
+                }
+                SetInt(GetInt(0, 16), indexBlock.num * blockSize, 16);
+                SetInt(indexBlock.num, 0, 16);
+                SetInt(GetInt(256, 16) + 1, 256, 16);
             }
             for (i = 0; i < 128; ++i)
             {

@@ -329,6 +329,7 @@ namespace DocumentSystem
                 docSys.curPath.Clear();
                 docSys.FCBLevel.Push(DocumentSystem.rootBeginAddr);
                 docSys.curPath.Add("root");
+                isInFile = false;
                 RefreshFolder();
                 MessageBox.Show("Formatted the disk successfully!", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
               
